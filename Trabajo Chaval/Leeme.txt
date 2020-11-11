@@ -1,0 +1,8 @@
+El orden de ejecucion es el siguiente:
+
+	1 => entidadB ( ./entidadB)
+	2 => entidadA ( ./entidadA)
+	3 => usuario2 ( ./usuario2)
+	4 => usuario1 ( ./usuario1 PID_usuario2 m 1 [ftp])
+
+Antes debe haberse ejecutado el Makefile
