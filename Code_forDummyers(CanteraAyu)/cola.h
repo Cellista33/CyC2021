@@ -8,7 +8,7 @@ extern int errno;
 
 #define CLAVE1 ftok("./cola.h", 'a')
 #define CLAVE2 ftok("./cola.h", 'b')
-
+#define 
 
 typedef struct {
 	long type; //Indica el sentido de envio de mensajes en la cola

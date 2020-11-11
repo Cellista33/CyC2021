@@ -1,9 +1,14 @@
 #include <stdio.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/shm.h>
 #include <sys/sem.h>
+#include <sys/msg.h>
+#include <sys/ipc.h>
+#include <sys/types.h>
 #include "entidadA.h"
+
 
 //Definimos las varibales asociadas a la comunicación
 
@@ -52,6 +57,20 @@ void inicio_semaforo(){
   }
 }
 
+void lectural_cola(){
+
+	if ((msgrcv(ID_colaA, &cola_A, sizeof(cola_msg)-sizeof(long), 1L, 0)) < 0 ){
+	
+		printf("Error al recibir por la cola");
+		fflush(stdout);
+		exit(1);
+	}
+
+	printf("\nHa recibido de usuario A.");
+    	printf("\tdatos: %s\n", cola_A.datos);
+  
+}
+
 void cierre_memoria(){
   if (shmdt((char *) memo_puntero) < 0){
     perror("No se ha podido desapuntar la memoria");
@@ -78,23 +97,13 @@ int main() {
   inicio_cola();
   printf ("\nSe ha iniciado la cola de mensajes");
   inicio_memoria();
-  printf("\nSe ha conectado a la memoria compartida");
+  printf("\n No Se ha conectado a la memoria compartida");
   inicio_semaforo();
-  printf("\nSe ha conectado al canal del semaforo");
+  printf("\n No Se ha conectado al canal del semaforo");
+  printf("\nEn espera peticion de usuario 1");
   
-  
-    printf("\nEn espera peticion de usuario A");
-		if ((msgrcv(ID_colaA, &cola_A, sizeof(cola_msg)-sizeof(long), 1L, 0)) < 0 )
-		{
-			perror("msgrcv");
-			printf("Error al recibir por la cola");fflush(stdout);
-			exit(1);
-		}
-		/* Mensaje de control */
-		printf("\nHa recibido de usuario A.");
-    printf("\tdatos: %s\n", cola_A.datos);
-  
-  
+  lectura_cola();
+
   
   
   
