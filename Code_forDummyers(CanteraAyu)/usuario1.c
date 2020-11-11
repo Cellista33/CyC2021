@@ -124,6 +124,7 @@ void opciones_tf(){
     }
 
   }
+  
 
 }
 void main (int argc, char *argv[]){
