@@ -16,7 +16,7 @@
   m_compartida *memo_puntero;
 
   //Semaforos
-  int sema_1, sema_2;
+  int sema;
 
   int ID_A;
 
@@ -46,10 +46,38 @@ void inicio_memoria(){
 }
 
 void inicio_semaforo(){
-  if ((sema_1 = semget(SEMKEY, 2,PERMS|IPC_CREAT)) < 0 ){
+  if ((sema = semget(SEMKEY, 2,PERMS|IPC_CREAT)) < 0 ){
     perror("No se ha podido crear el canal de semaforo");
     exit(1);
-  }
+  } else printf("\nSe ha creado el canal de los semaforos");
+  
+  
+}
+
+void bloq_sema (int id){
+	struct sembuf op;
+	printf ("\nSe va a bloquear el semaforo %i", id);
+	
+	op.sem_num = id;
+	op.sem_num = -1;
+	op.sem_num = 0;
+	
+	if (semop(sema, &op, 1) < 0){
+		perror("No se ha podido bloquear el semaforo");
+	} else printf("\n Se ha bloqueado el semaforo %i", id);
+}
+
+void libre_sema (int id){
+	struct sembuf op;
+	printf ("\nSe va a liberar el semaforo %i", id);
+	
+	op.sem_num = id;
+	op.sem_num = 1;
+	op.sem_num = 0;
+	
+	if (semop(sema, &op, 1) < 0){
+		perror("No se ha podido liberar el semaforo");
+	}else printf("\n Se ha liberado el semaforo %i", id);
 }
 
 
@@ -95,7 +123,7 @@ int main() {
   printf("\nSe ha conectado al canal del semaforo");
 
   
-  
+  sleep(20);
   
   cierre_memoria();
   cierre_cola();
