@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <errno.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/shm.h>
@@ -25,6 +26,16 @@
   
 
   int ID_A;
+  
+	struct sembuf opl;
+	struct sembuf opb;
+
+  	
+
+	
+
+
+
 
 
 
@@ -55,31 +66,36 @@ void inicio_semaforo(){
   if ((sema = semget(SEMKEY, 2,0)) < 0 ){ //Indicamos que inicializamos el array de semaforos que tendra dos dimensiones
     perror("No se ha podido crear el canal de semaforo");
     exit(1);
-  }else printf("\n No Se ha conectado al canal del semaforo");
+  }else printf("\n Se ha conectado al canal del semaforo");
 }
 
 void bloq_sema (int id){
-	struct sembuf op;
+	
 	printf ("\nSe va a bloquear el semaforo %i", id);
 	
-	op.sem_num = id;
-	op.sem_num = -1;
-	op.sem_num = 0;
+	opb.sem_num = id;
+		//Operacion de bloquear al semaforo
+	opb.sem_op = -1;
+	opb.sem_flg = 0;
+
+
 	
-	if (semop(sema, &op, 1) < 0){
+	if (semop(sema, &opb, 1) < 0){
 		perror("No se ha podido bloquear el semaforo");
 	} else printf("\n Se ha bloqueado el semaforo %i", id);
 }
 
 void libre_sema (int id){
-	struct sembuf op;
+
+  	//Operacion de liberar al semaforo
+  	opl.sem_op = 1;
+	opl.sem_flg = 0; 
+	
 	printf ("\nSe va a liberar el semaforo %i", id);
 	
-	op.sem_num = id;
-	op.sem_num = 1;
-	op.sem_num = 0;
-	
-	if (semop(sema, &op, 1) < 0){
+	opl.sem_num = id;
+
+	if (semop(sema, &opl, 1) < 0){
 		perror("No se ha podido liberar el semaforo");
 	}else printf("\n Se ha liberado el semaforo %i", id);
 }
@@ -142,20 +158,57 @@ void cierre_cola(){
   }
 }
 
-int main() { 
+
+//--------------------------------------------------------FUNCIONES PARA SACAR DATOS POR PANTALLA---------------------------------------------------------
+void saca_memoria(){
+	printf("\n\t\t\tValores almacenados en la memoria compartida");
+	printf("\n\t Origen %i", (mc_ptr->origen));
+	printf("\n\t Destino %i", (mc_ptr->destino));
+	
+}
+
+void saca_cola(){
+	printf("\n\t\t\tValores almacenados en la cola A");
+	printf("\n\t Origen %i", cola_A.origen);
+	printf("\n\t Destino %i", cola_A.destino);
+	
+}
 
 
+
+
+
+
+
+
+
+int main() {
+
+	//int uno = 1;
+	//int cero = 0;
   inicio_cola();  
   inicio_memoria();  
   inicio_semaforo();  
   printf("\nEn espera peticion de usuario 1");
   lectura_cola();
-  bloq_sema(0);
-  guarda_memoria();
-  libre_sema(1);
   
   bloq_sema(0);
+  guarda_memoria();
+  saca_cola();
+  saca_memoria();
+  libre_sema(1);
+  
+  
+  
+  
+  
+  
+  
+  //bloq_sema(0);
   lee_memoria();
+  
+  
+  sleep(20);
   
   
   

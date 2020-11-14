@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/shm.h>
 #include <sys/sem.h>
 #include "entidadA.h"
@@ -13,14 +14,15 @@
 
   //memoria compartida
   int ID_memo;
-  m_compartida *memo_puntero;
+  m_compartida *mc_ptr;
 
   //Semaforos
   int sema;
 
   int ID_A;
-
-
+  
+  struct sembuf opb; 
+  struct sembuf opl;
 
 
 void inicio_cola(){
@@ -39,7 +41,7 @@ void inicio_memoria(){
     exit(1);
   }
 
-  if((memo_puntero =(m_compartida *) shmat(ID_memo, (char *)0, 0)) == (m_compartida *) -1){
+  if((mc_ptr =(m_compartida *) shmat(ID_memo, (char *)0, 0)) == (m_compartida *) -1){
     perror ("No se ha podido apuntar a la memoria compartida");
     exit(1);
   }
@@ -50,39 +52,89 @@ void inicio_semaforo(){
     perror("No se ha podido crear el canal de semaforo");
     exit(1);
   } else printf("\nSe ha creado el canal de los semaforos");
+  	
+  	semaforo.val = 0;
+	if(semctl(sema, 0, SETVAL, semaforo) < 0){
+		perror("semctl");
+		exit(1);
+	}
+
+	/* Se inicializa con valor 0 el SEM 1 */
+	semaforo.val = 0;
+	if(semctl(sema, 1, SETVAL, semaforo) < 0){
+		perror("semctl");
+		exit(1);
+	}
+
   
   
 }
 
 void bloq_sema (int id){
-	struct sembuf op;
+	
 	printf ("\nSe va a bloquear el semaforo %i", id);
 	
-	op.sem_num = id;
-	op.sem_num = -1;
-	op.sem_num = 0;
+	opb.sem_num = id;
 	
-	if (semop(sema, &op, 1) < 0){
+		//Operacion de bloquear al semaforo
+	opb.sem_op = -1;
+	opb.sem_flg = 0;
+
+
+
+
+	
+	
+
+	
+	if (semop(sema, &opb, 1) < 0){
 		perror("No se ha podido bloquear el semaforo");
 	} else printf("\n Se ha bloqueado el semaforo %i", id);
 }
 
 void libre_sema (int id){
-	struct sembuf op;
+	
 	printf ("\nSe va a liberar el semaforo %i", id);
 	
-	op.sem_num = id;
-	op.sem_num = 1;
-	op.sem_num = 0;
+	opl.sem_num = id;
+  	//Operacion de liberar al semaforo
+  	opl.sem_op = 1;
+	opl.sem_flg = 0;
 	
-	if (semop(sema, &op, 1) < 0){
+	
+	if (semop(sema, &opl, 1) < 0){
 		perror("No se ha podido liberar el semaforo");
 	}else printf("\n Se ha liberado el semaforo %i", id);
 }
 
+void guarda_memoria(){
+	
+	printf("\nSe va a guardar en la memoria compartida");
+	
+	mc_ptr -> origen = cola_B.origen;
+	mc_ptr -> destino = cola_B.destino;
+	mc_ptr -> opcion = cola_B.opcion;
+	strcpy( mc_ptr -> cadena, cola_B.cadena);
+	strcpy( mc_ptr -> datos, cola_B.datos);	
+
+	printf("\n Ya se ha guardado en la memoria compartida");
+}
+
+void lee_memoria(){
+
+	printf ("\nSe va a leer de la memoria compartida y a escribir en la cola");
+	
+	cola_B.origen = mc_ptr -> origen;  
+	cola_B.destino = mc_ptr -> destino;
+	cola_B.opcion = mc_ptr -> opcion;
+	strcpy( cola_B.datos,    mc_ptr -> datos);
+	
+	printf ("\n Se han pasado los datos de la memoria compartida a la cola");
+}
+
 
 void cierre_memoria(){
-  if (shmdt((char *) memo_puntero) < 0){
+  if (shmdt((char *) mc_ptr) < 0){
     perror("No se ha podido desapuntar la memoria");
     exit(1);
   } else{
@@ -110,7 +162,28 @@ void cierre_cola(){
 
 
 
+//--------------------------------------------------------FUNCIONES PARA SACAR DATOS POR PANTALLA---------------------------------------------------------
+void saca_memoria(){
+	printf("\n\t\t\tValores almacenados en la memoria compartida");
+	printf("\n\t Origen %ls", &(mc_ptr->origen));
+	printf("\n\t Destino %ls", &(mc_ptr->destino));
+	
+}
+
+void saca_cola(){
+	printf("\n\t\t\tValores almacenados en la cola B");
+	printf("\n\t Origen %i", cola_B.origen);
+	printf("\n\t Destino %i", cola_B.destino);
+	printf("\n\t Datos %s", cola_B.datos);
+	
+}
+
+
+
 int main() {
+
+	int uno = 1;
+	int cero = 0;
 
   
 
@@ -121,6 +194,16 @@ int main() {
   printf("\nSe ha conectado a la memoria compartida");
   inicio_semaforo();
   printf("\nSe ha conectado al canal del semaforo");
+  //printf ("\nPuta vida loco");
+  libre_sema(0);
+  bloq_sema(1);
+  lee_memoria();
+  
+  saca_memoria();
+  sleep(1);
+  saca_cola();
+  
+  libre_sema(1);
 
   
   sleep(20);
@@ -130,3 +213,7 @@ int main() {
 
 
 }
+
+
+
+
