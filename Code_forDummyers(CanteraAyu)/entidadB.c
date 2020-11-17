@@ -123,13 +123,30 @@ void guarda_memoria(){
 void lee_memoria(){
 
 	printf ("\nSe va a leer de la memoria compartida y a escribir en la cola");
-	
+	cola_B.type = mc_ptr -> destino;
 	cola_B.origen = mc_ptr -> origen;  
 	cola_B.destino = mc_ptr -> destino;
 	cola_B.opcion = mc_ptr -> opcion;
 	strcpy( cola_B.datos,    mc_ptr -> datos);
 	
 	printf ("\n Se han pasado los datos de la memoria compartida a la cola");
+}
+
+void envia_cola(){
+	
+	printf("\nEnviando mensaje por la cola");
+	msgsnd(ID_colaB, &cola_B, sizeof(cola_msg)-sizeof(long), 0);
+	printf("\nEl mensaje se ha enviado por la cola");
+	
+}
+
+void recibe_cola(){
+	
+	cola_B.type = 2L;
+	printf("\nRecibiendo mensaje por la cola");
+	msgrcv(ID_colaB, &cola_B, sizeof(cola_msg)-sizeof(long),cola_B.type, 0);
+	printf("\nEl mensaje se ha recibido por la cola");
+
 }
 
 
@@ -195,15 +212,34 @@ int main() {
   inicio_semaforo();
   printf("\nSe ha conectado al canal del semaforo");
   //printf ("\nPuta vida loco");
-  libre_sema(0);
-  bloq_sema(1);
-  lee_memoria();
+ 
   
-  saca_memoria();
-  sleep(1);
-  saca_cola();
+  while (1){
+   	libre_sema(0);
+  	  bloq_sema(1);
+	  printf("\nEsperando a leer la memoria");
+	  lee_memoria();
+	  
+	  saca_memoria();
+	  sleep(1);
+	  saca_cola();
+	  envia_cola();
+	  
+	  recibe_cola();
+	  guarda_memoria();
+	  libre_sema(0);
+	  bloq_sema(1);
+	  
+	  
+	  
+	  
+	  //libre_sema(1);
+	  
   
-  libre_sema(1);
+  
+  }
+  
+  
 
   
   sleep(20);
@@ -213,6 +249,7 @@ int main() {
 
 
 }
+
 
 
 

@@ -15,7 +15,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include "msg.h"
-#include "msgq.h"
+#include "msgClaves.h"
 
 // Creamos una colo de tipo de dato cola_msg
 cola_msg colaMsg;
@@ -46,9 +46,17 @@ void main ()
         p_dir = &directorio;
 
         // Recepción de mensajes por la cola
-        printf("\nEsperando envío de la entidad 2...");
-        msgrcv(IDcola2, (cola_msg *) &colaMsg, sizeof(cola_msg) - sizeof(long), (long)getpid(), 0);
-        printf("\nRecibido de entidad 2 por cola");
+        puts("\nEsperando envio de la entidad B...");
+
+        //msgrcv(IDcola2, (cola_msg *) &colaMsg, sizeof(colaMsg) - sizeof(long), colaMsg.sentido, 0);
+
+        if ((msgrcv(IDcola2, &colaMsg, sizeof(cola_msg)-sizeof(long), colaMsg.sentido, 0)) < 0 )
+        {
+            perror("\nERROR: Fallo en la recepción por cola");
+            fflush(stdout);
+            exit(EXIT_FAILURE);
+        }
+        puts("\nRecibido de usuario A");
 
         // Invierte el sentido de envío de la cola
         colaMsg.sentido = colaMsg.origen;
@@ -60,11 +68,11 @@ void main ()
         if(colaMsg.opcion == 0)
         {
             // Mostramos resultados por pantalla
-            printf("\nModo ECO");
+            puts("\nModo ECO");
 
             // Envío de datos
             msgsnd(IDcola2, (cola_msg *) &colaMsg, sizeof(cola_msg) - sizeof(long), 0);
-            printf("\nEnvío de datos a entidad B");
+            puts("\nEnvio de datos a entidad B");
 
             // Envío del ultimo mensaje
             colaMsg.fin = 1;
@@ -112,6 +120,7 @@ void main ()
             {
                 // Cambio al directorio cuyo nombre ha indicado usuario 1
                 printf("\nCambiando al directorio indicado por el usuario: %s",colaMsg.datos);
+                // chdir es una llamada a sistema que cambia de directorio
                 chdir(colaMsg.datos);
                 fdir = opendir(".");
 
@@ -119,6 +128,7 @@ void main ()
                 while ((p_dir = readdir(fdir)) != NULL)
                 {
                     printf("%s\n", p_dir->d_name);
+                    // Limpia buffer y lo presenta en consola
                     fflush(stdout);
                 }
 

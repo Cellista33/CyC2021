@@ -11,7 +11,7 @@
 #include <sys/shm.h>
 #include <sys/sem.h>
 #include "msg.h"
-#include "msgq.h"
+#include "msgClaves.h"
 
 // Creacion estructura para cola de mensajes
 cola_msg colaMsg;
@@ -43,7 +43,7 @@ void abre_sem(int num)
     operador.sem_flg = 0;
     if(semop(sem,  &operador, 1) < 0)
     {
-        perror("\nERROR: Fallo en las operaciones del semaforo");
+      perror("\nERROR: Fallo en las operaciones del semaforo");
     }
 }
 
@@ -58,7 +58,7 @@ void cierra_sem(int num)
     operador.sem_flg = 0;
     if(semop(sem,  &operador, 1) < 0)
     {
-        perror("\nERROR: Fallo en las operaciones del semaforo");
+      perror("\nERROR: Fallo en las operaciones del semaforo");
     }
 }
 
@@ -135,31 +135,34 @@ main ()
             cierra_sem(1);
 
             // Reconocimiento de patron de encabezado
-            if(memoPtr->patron == 92) {
-              printf("\nMesaje recibido de entidad A");
+            if(memoPtr->patron == 92)
+            {
+                printf("\nMesaje recibido de entidad A");
             }
-            else {
-              perror("\nERROR: PAtron de encabezado no reconocido");
-              exit(EXIT_FAILURE);
+            else
+            {
+                perror("\nERROR: Patron de encabezado no reconocido");
+                exit(EXIT_FAILURE);
             }
 
             // Lectura de la memoria compartida. Introducción en la cola de mensajes 2
-            colaMsg.sentido = memoPtr->destino; //Nos lo cargamos??
+            colaMsg.sentido = memoPtr->destino;
             colaMsg.origen = memoPtr->destino;
             colaMsg.destino = memoPtr->destino;
-            //colaMsg.msgprotocolo = memoPtr->msgprotocolo;
             colaMsg.opcion = memoPtr->opcion;
             strcpy(colaMsg.datos, memoPtr->datos);
             strcpy(colaMsg.comando, memoPtr->comando);
 
-            printf("\nLectura de memoria compartida finalizada");
+            puts("\nLectura de memoria compartida finalizada");
 
             // Envio por cola a Usuario 2
-            printf("\nEnvia a Usuario 2");
+            puts("\nEnvia a Usuario 2");
 
-            //msgsndcola2, (cola_msg *) &colaMsg, sizeof(cola_msg) - sizeof(long), 0);
+            //POSIBILIDADES PARA ENVIAR LA COLA:
 
-            msgsnd(IDcola2, (char *) &colaMsg, sizeof(cola_msg)-sizeof(long), 0);
+            msgsnd(IDcola2, &colaMsg, sizeof(cola_msg)-sizeof(long), 0);
+
+            puts("\nMensaje enviado");
 
             // Si el comando es "quit" el programa finaliza. El resto de procesos ya fueron informados por memoria compartida.
             if(strcmp(colaMsg.comando, "quit") == 0)
@@ -201,51 +204,49 @@ main ()
             // Sentido de la cola
             colaMsg.sentido = 2L;
 
-            // Lectura de contenido de la cola 2, enviado por Usuario 2
-            // msgrcvcola2, (cola_msg *) &colaMsg, sizeof (cola_msg) - sizeof(long), colaMsg.sentido, 0);
 
-            msgrcv(IDcola2, &colaMsg, sizeof(cola_msg)-sizeof(long), 1L, 0);
-            printf("\nMensaje de Usuario 2 leido");
+            // Lectura de contenido de la cola 2, enviado por Usuario 2
+            msgrcv(IDcola2, &colaMsg, sizeof(cola_msg)-sizeof(long), colaMsg.sentido, 0);
+            puts("\nMensaje de Usuario 2 leido");
 
             // Escritura en memoria compartida
-            printf("\nEscribiendo en memoria compartida...");
+            puts("\nEscribiendo en memoria compartida...");
+
+
 
             memoPtr->origen = colaMsg.origen;
             memoPtr->destino = colaMsg.destino;
-            // memoPtr->msgprotocolo = colaMsg.msgprotocolo;
             strcpy(memoPtr->datos, colaMsg.datos);
 
             // Abrimos sem0 para permitir acceso a memoria de Entidad A
             abre_sem(0);
-            printf("\nEscrito en memoria, sem0 abierto");
+            puts("\nEscrito en memoria, sem0 abierto");
+
 
             // Indicacion del sentido y reseteo del flag de fin
             colaMsg.sentido = 2L;
             colaMsg.fin = 0;
+
             while (colaMsg.fin != 1)
             {
                 // Cierra sem1 para leer
                 cierra_sem(1);
 
                 // Lectura de cola 2
+                (msgrcv(IDcola2, &colaMsg, sizeof(cola_msg)-sizeof(long), colaMsg.sentido, 0));
 
-                (msgrcv(IDcola2, &colaMsg, sizeof(cola_msg)-sizeof(long), 1L, 0));
-
-                // msgrcvcola2, (cola_msg *) &colaMsg, sizeof (cola_msg) - sizeof(long), colaMsg.sentido, 0);
-
-                printf("\nLectura de ususario 2");
-                printf("\nSe procede a la escirtura en memoria compartida");
+                puts("\nLectura de ususario 2");
+                puts("\nSe procede a la escirtura en memoria compartida");
 
                 //Introducción en memoria compartida los datos obtenidos por la cola de mensajes
                 memoPtr->origen = colaMsg.origen;
                 memoPtr->destino = colaMsg.destino;
-                // memoPtr->msgprotocolo = colaMsg.msgprotocolo;
                 strcpy(memoPtr->datos, colaMsg.datos);
 
                 // Abrimos sem0 para permitir acceso de la Entidad A a memoria
                 abre_sem(0);
 
-                printf("\nMemoria escrita, sem0 abierto");
+                puts("\nMemoria escrita, sem0 abierto");
             }
 
             memoPtr->fin = 1;

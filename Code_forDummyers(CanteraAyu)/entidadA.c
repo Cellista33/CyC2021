@@ -117,6 +117,7 @@ void lee_memoria(){
 
 	printf ("\nSe va a leer de la memoria compartida y a escribir en la cola");
 	
+	cola_A.type = mc_ptr -> destino;
 	cola_A.origen = mc_ptr -> origen;  
 	cola_A.destino = mc_ptr -> destino;
 	cola_A.opcion = mc_ptr -> opcion;
@@ -126,7 +127,7 @@ void lee_memoria(){
 }
 
 
-void lectura_cola(){
+void recibe_cola(){
 
 	if ((msgrcv(ID_colaA, &cola_A, sizeof(cola_msg)-sizeof(long), 1L, 0)) < 0 ){
 	
@@ -138,6 +139,13 @@ void lectura_cola(){
 	printf("\nHa recibido de usuario A.");
     	printf("\tdatos: %s\n", cola_A.datos);
   
+}
+
+void envia_cola(){
+	
+	msgsnd(ID_colaA, &cola_A, sizeof(cola_msg) - sizeof(long), 0);
+	printf ("\nSe ha enviado por la cola A");
+	
 }
 
 void cierre_memoria(){
@@ -189,23 +197,27 @@ int main() {
   inicio_cola();  
   inicio_memoria();  
   inicio_semaforo();  
-  printf("\nEn espera peticion de usuario 1");
-  lectura_cola();
+ 
+  while(1){
   
-  bloq_sema(0);
-  guarda_memoria();
-  saca_cola();
-  saca_memoria();
-  libre_sema(1);
+	 printf("\nEn espera peticion de usuario 1");
+  
+	  recibe_cola();	  
+	  bloq_sema(0);
+	  guarda_memoria();
+	  saca_cola();
+	  saca_memoria();
+	  libre_sema(1);
+	  
+	  bloq_sema(0);
+	  lee_memoria();
+	  envia_cola();
+	  libre_sema(1);
+	  
+	  
+  }
   
   
-  
-  
-  
-  
-  
-  //bloq_sema(0);
-  lee_memoria();
   
   
   sleep(20);

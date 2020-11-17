@@ -7,11 +7,12 @@
 #include <string.h>
 #include <unistd.h>
 #include "msg.h"
-#include "msgq.h"
+#include "msgClaves.h"
 
 // Creamos una colo de tipo de dato cola_msg
 cola_msg colaMsg;
 
+// Inclusión de argc y *argv para introducir argumentos por teclado
 void main (int argc, char *argv[])
 {
 
@@ -76,6 +77,7 @@ void main (int argc, char *argv[])
     {
         // Se inicia el flag de final antes de cada bucle
         colaMsg.fin = 0;
+
         // Sentido fijado en dirección Usuario -> Servidor
         colaMsg.sentido = 1L;
 
@@ -147,9 +149,7 @@ void main (int argc, char *argv[])
         printf("\tOrigen: %i\n",colaMsg.origen);
         printf("\tDestino: %i\n", colaMsg.destino);
         printf("\tDatos: %s\n", colaMsg.datos);
-
-        printf("\n\n");
-
+        
         // Enviamos la trama por la cola
         printf("\nEnviando mensaje por cola...");
         msgsnd(IDcola1, &colaMsg, sizeof(cola_msg)-sizeof(long), 0);
@@ -186,9 +186,6 @@ void main (int argc, char *argv[])
             printf("\nEsperando mensaje en modo ECO");
 
             msgrcv(IDcola1, (cola_msg *) &colaMsg, sizeof(cola_msg) - sizeof(long), (long)getpid(), 0);
-
-            // int msgrcv(IDcola1, struct msgbuf *msgp, int msgsz, long mtype, int msgflg);
-
 
             // Se muestra el mensaje recibido de usuario2
             printf("\nRecibido desde el Usuario 2:\n");

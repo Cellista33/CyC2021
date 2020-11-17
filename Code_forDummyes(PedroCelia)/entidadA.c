@@ -11,7 +11,7 @@
 #include <sys/shm.h>
 #include <sys/sem.h>
 #include "msg.h"
-#include "msgq.h"
+#include "msgClaves.h"
 
 // Creacion estructura para cola de mensajes
 cola_msg colaMsg;
@@ -125,8 +125,9 @@ main ()
             printf("\nEscritura en memoria compartida.");
 
             // Inclusion del patron de encabezado en la comunicacion entre entidades
-            // memoPtr->patron = 92;
-            
+
+            memoPtr->patron = 92;
+
             // Copia de campos de cola de mensajes a memoria compartida
             memoPtr->origen = colaMsg.origen;
             memoPtr->destino = colaMsg.destino;
@@ -145,24 +146,13 @@ main ()
             {
                 if ((msgctl(IDcola1, IPC_RMID, (struct msqid_ds *) NULL)) < 0)
                 {
-                    printf("\nCierre de programa");
-                    exit(EXIT_FAILURE);
+                  perror("\nERROR: Fallo al borrar la cola");
+                  exit(EXIT_FAILURE);
                 }
+                printf("\nCierre de programa");
                 exit(EXIT_SUCCESS);
-//
-//                if((msgctl(IDcola1, IPC_RMID, (struct msqid_ds *)NULL)) < 0)
-//                {
-//                    perror("\nERROR: Fallo al borrar la cola");
-//                    exit(EXIT_FAILURE);
-//                }
             }
 
-            // Borrado de cola 1
-//				if (msgctlcola1, IPC_R, (struct ms_ds *) NULL) < 0) {
-//					perror("\nERROR: Fallo al borrar la cola");
-//					exit(EXIT_FAILURE);
-//				}
-//			}
             // Activo hasta que se reciba el flag de fin de mensaje
             while(memoPtr->fin != 1)
             {
@@ -175,20 +165,14 @@ main ()
                 // Lectura de memoria compartida
                 colaMsg.origen = memoPtr->origen;
                 colaMsg.destino = memoPtr->destino;
-                //colaMsg.protocolo = memoPtr->msgprotocolo;
+
                 colaMsg.sentido = memoPtr->destino;
+
                 strcpy(colaMsg.datos, memoPtr->datos);
 
 
                 // Envío por cola de mensajes a Usuario 1 (interfaz)
-
-
-                printf("\n-Antes del send");
-                //msgsnd(IDcola1, &colaMsg, sizeof(cola_msg) - sizeof(long), 0);
-
-                msgsnd(IDcola1, (char *) &colaMsg, sizeof(cola_msg)-sizeof(long), IPC_NOWAIT);
-                printf("\n-Despues del send");
-
+                msgsnd(IDcola1, &colaMsg, sizeof(cola_msg)-sizeof(long), 0);
                 printf("\nEnvio a Usuario 1 por cola");
 
                 // Apertura de sem1 si se llega al final del mensaje
