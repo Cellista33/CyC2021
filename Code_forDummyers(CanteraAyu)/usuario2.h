@@ -2,8 +2,6 @@
 #include "sema.h"
 
 
-//void (int argc,char *argv[]);
-//void almacen(char *argv[]);
 
 
 void cli_eco();

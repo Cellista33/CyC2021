@@ -8,6 +8,10 @@ extern int	errno;
 
 
 
+
+
+
+
 #define SEMKEY ftok("./msq.h", 'd') /* Clave para el semaforo */
 
 /*Estructura del semaforo*/
@@ -15,4 +19,4 @@ union semun {
   int val; 
   struct semid_ds *buf;
   ushort *array;
-}semctl_arg;
+}semaforo;

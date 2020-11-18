@@ -26,15 +26,9 @@ typedef struct
     int destino;           // Pid del proceso destino
     int origen;            // Pid del proceso origen
     int longitud;          // Longitud del mensaje
-
-    //Campo tipo:
-    int tipo;           // 0: data; 1: ACK; 2: ERROR
-    //int opcion;            // 0 en eco, 1 en ftp Lo ponemos??
+    int tipo;              // 0: data; 1: ACK; 2: ERROR
     char comando[TAM_CAD]; // Comandos: cd, dir, get, quit
     int fin;               // Indica fin de envio de archivos
-
-    //int error;             // 1 si llega correctamente, 0 si no
-
     char datos[TAM_MAX];   // Datos del mensaje
 
 } memo_msg;

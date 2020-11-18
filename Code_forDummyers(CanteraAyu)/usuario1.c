@@ -12,31 +12,33 @@
   //Cola de mensajes
   cola_msg  cola_A;
   int ID_colaA;
+  
+  //Datos a almacenar.
+  
+  struct datos_usuario info;
 
 
 
- /*void almacen( *argv[]){
-
-   cola_A.origen = getpid();
-   cola_A.destino = atoi(argv[1]);
-   cola_A.modo
- }
-*/
 
 void cli_eco(){
 
 	//cola_A = cola_A;
 
-
+	
 	cola_A.type = 1L;
-  	cola_A.opcion=0;
+  	cola_A.dat_que.cli = 0;
   printf("\n\t\tMODO ECO");
 
-  puts("Introduzca un texto para enviar");
-  if (fgets(cola_A.datos, MAXDATA_COLA, stdin) == NULL){
+  puts("Introduzca un texto para enviar");  
+  //Como no nos ha dado tiempo a poder implementar la segmentación del mensaje
+  //	directamente ponemos como límite que lo máxiom que se pueda leer sea el 
+  //	límite del campo datos de la estructura (1014 bytes)
+  if (fgets(info.data, MAXDATA_U, stdin) == NULL){
     perror("Error al insertar el texto");
     exit(EXIT_FAILURE);
   }
+  
+  cola_A.dat_que = info;
   
   
 
@@ -53,7 +55,7 @@ void cli_eco(){
 		
 	/* Se muestra el mensaje recibido de usuario2 */
 	printf("\nRecibido desde el Usuario 2:\n");
-  saca_datos();
+  	saca_datos();
 
 	/* Salimos del programa */
 	//exit(EXIT_SUCCESS); 
@@ -63,8 +65,11 @@ void cli_eco(){
 
 void cli_tf(){
 
-  cola_A.opcion=1;
-
+  cola_A.dat_que.cli=1;
+  
+  printf("\nEsta opcion no se encuentra disponible");
+  exit(0);
+/*
   	puts("\nIntroduzca un texto para enviar: ");
 
 		if (fgets(cola_A.datos, MAXDATA_COLA, stdin) == NULL)
@@ -113,7 +118,7 @@ void saca_datos(){
 	printf("\nEnviado desde el Usuario 1:\n");
 	printf("\torigen: %i\n",cola_A.origen);
 	printf("\tdestino: %i\n", cola_A.destino);
-	printf("\tdatos: %s\n", cola_A.datos);
+	printf("\tdatos: %s\n", cola_A.dat_que.data);
 
 
   
@@ -131,7 +136,9 @@ void opciones_tf(){
     printf("\n\tquit");
 
     printf("\nAccion a realizar:");
-    scanf("%s", cola_A.cadena);
+    }
+    
+    /* scanf("%s", cola_A.da);
     while ((cola_A.cadena != "cd") && (cola_A.cadena != "get") && (cola_A.cadena != "quit")){
       printf("\nError. Ha introducido un comando no valido.");
       printf("\nIntroduzca una opcion valida:");
@@ -139,13 +146,28 @@ void opciones_tf(){
     }
 
   }
+*/
 
+
+int salida(){
+	int op;
+
+
+	printf("\n\n\n\t\t\t Introduzca una de las siguientes opciones:");
+	printf("\n\t1 - Realizar otra operacion del mismo tipo");
+	printf("\n\t0 - Salir del programa");
+	printf("\nOpcion a realizar:");
+	scanf("%d", &op);
+	
+	return(op);
+	 
+}
 
 void main (int argc, char *argv[]){
 
 	int aux;
 
-   //comp(arc, *argv[]);
+  
    printf("\nUsuario 1 iniciado");
    printf("\n Numero de argumentos: %i", argc);
    
@@ -155,7 +177,7 @@ void main (int argc, char *argv[]){
 		exit(EXIT_FAILURE); 
    }
 	
-   //almacen(*argv[]);
+  
 
    cola_A.origen = getpid();
    cola_A.destino = atoi(argv[1]);
@@ -172,19 +194,20 @@ void main (int argc, char *argv[]){
 
   if (argc == 3 || !(strcmp(argv[3], "eco")) || !(strcmp(argv[3], "ECO")) ){
     inicio_cola();
-    while(1){
+    
       cli_eco();
       aux = cola_A.origen;
       cola_A.origen = cola_A.destino;
       cola_A.destino = aux;
       
       
-    }
+    
 
   } else if(!(strcmp(argv[3], "ftp")) || !(strcmp(argv[3], "FTP"))) {
     inicio_cola();
-    while (1){
+    do{
       cli_tf();
-    }    
-  }  
+    } while(salida() == 1);   
+  }
+    
 }

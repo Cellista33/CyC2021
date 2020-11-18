@@ -71,7 +71,7 @@ main ()
     // Creación de cola de mensajes
     if( (IDcola1 = msgget(MKEYQ1, PERMS|IPC_CREAT)) < 0 )
     {
-        perror("\nServidor: No puedo obtener id de la cola");
+        perror("\nERROR: No se pudo obtner ID de la cola");
         exit(EXIT_FAILURE);
     }
 
@@ -104,14 +104,14 @@ main ()
         memoPtr->fin = 0;
 
         // Recepción de usuario A por cola de mensajes
-        printf("\nEsperando usuario A");
+        printf("\nEsperando usuario 1");
         if ((msgrcv(IDcola1, &colaMsg, sizeof(cola_msg)-sizeof(long), 1L, 0)) < 0 )
         {
             perror("\nERROR: Fallo en la recepción por cola");
             fflush(stdout);
             exit(EXIT_FAILURE);
         }
-        printf("\nRecibido de usuario A");
+        printf("\nRecibido de usuario 1");
 
         // En esta práctica es siempre memoria compartida. Dejamos praparado para añadir sockets
         if(colaMsg.modo == 'm')
@@ -122,7 +122,7 @@ main ()
             cierra_sem(0);
 
             //Introducción en memoria compartida los datos obtenidos por la cola de mensajes
-            printf("\nEscritura en memoria compartida.");
+            printf("\nEscritura en memoria compartida");
 
             // Inclusion del patron de encabezado en la comunicacion entre entidades
 
@@ -135,7 +135,7 @@ main ()
             strcpy(memoPtr->comando, colaMsg.comando);
             strcpy(memoPtr->datos, colaMsg.datos);
 
-            printf("\nEscritura finalizada en memoria compartida.");
+            printf("\nEscritura finalizada en memoria compartida");
 
             // Abrimos semaforo 1 permitiendo acceder a la memoria compartida a Entidad 2
             abre_sem(1);
@@ -160,7 +160,7 @@ main ()
                 printf("\nCierre sem0 para leer mem");
                 cierra_sem(0);
 
-                printf("\n-Escritura en cola");
+                printf("\nEscritura en cola");
 
                 // Lectura de memoria compartida
                 colaMsg.origen = memoPtr->origen;

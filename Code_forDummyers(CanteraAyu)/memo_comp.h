@@ -1,24 +1,52 @@
 #include <errno.h>
 #include <sys/ipc.h>
 #include <sys/types.h>
+//#include "usu.h"
+
+
 extern int errno;
-#define MAXDATA_MEMO (1024)
+
 #define PERMS 0666  // Permisos 
 #define SHMKEY ftok("./memo_comp.h", 'c') // Clave para la memoria compartida 
 
-typedef struct {
 
-  char patron;
-	unsigned int protocolo; /* 1 unidireccional y 2 bidireccional */
-	unsigned int origen;    
+
+
+
+
+/**
+*	\brief Esctructura del protocolo de memoria compartida
+*
+*	Estructura diseñada para el intercambio de PDU entre la entidadA y entidadB	
+*
+*
+*/
+
+typedef struct {
+	/** Patron fijo que permite identificar el mensaje "/" */
+  	char patron;
+  	
+  	/** PID del proceso donde se origina el mensaje */
+	unsigned int origen;
+	
+	/** PID del proceso donde se entrega el mensaje */    
 	unsigned int destino;
+	
+	/** Tamaño de la estructura asociada al intercambio de datos */
 	unsigned int longitud;
-	bool opcion; //Si es 0 es eco, si es 1 es ftp
-	unsigned int tipo;     /* 0: data, 1: ACK y 2: ERROR */
-	int final; // Marca de fin de envio de archivos
-	char datos[MAXDATA];
-	char cadena[10]; //Para decir si es cd, dir, get o quit
+	
+	/** 
+	*	\brief Tipo de mensaje
+	*
+	*	0: Si se están transmitiendo datos.
+	*	1: Si se quiere comunicar un ACK.
+	*	2: si se quiere comunicar un NAK.
+	*/
+	unsigned char tipo;    
+	
+	
+	/** Estrcutra de datos donde se manda el mensaje y datos asociados*/ 
+	struct datos_usuario datito; ///  
 
 } m_compartida;
-// Tamano int: 4bytes
-/* Quitamos el campo de erro, porque en el enunciado emplea el parámetro tipo para esa misma función.
+
