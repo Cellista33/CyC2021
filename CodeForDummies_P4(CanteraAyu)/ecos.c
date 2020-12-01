@@ -8,27 +8,43 @@
 #define SERV_TCP_PORT 7500 //< Puerto donde está el servidor de eco
 #define SERV_HOST_ADDR "157.88.201.95" //< Host donde se encuentra el proceso servidor
 #define MAXLINE 512   //< Tamaño máximo de la cola de mensajes que se puede mandar
-char *pname; //<
+char *pname; //<Puntero asociado a los argumentos de entrada de main.
 main(argc, *argv)
 int argc;
 char argv[];
 {
   int sockfd, tam; //< Variable utilizada para almacenar el valor de devuelve socket, que es un descriptor de fichero
-  struct sockaddr_in serv_addr;
-  char DATA[MAXLINE];
+  struct sockaddr_in serv_addr; //< Estructura donde almacenamos la dirección y puerto con la que nos comunicaremos
+  char DATA[MAXLINE]; //< definimos la cadena de caracteres donde almacenaremos el mensaje que introducirá el usuario
   pname = argv[0];
-  bzero((char *) &serv_addr, sizeof(serv_addr));
-  serv_addr.sin_family = AF_INET;
+  bzero((char *) &serv_addr, sizeof(serv_addr)); //< Ponemos a 0 las direcciones de memoria donde se alberga toda la estructura asociada a las direcciones de memoria y puertos
+  serv_addr.sin_family = AF_INET; //<Especificamos que realizaremos una comunicación con otra máquina a traves de internet
   serv_addr.sin_addr.s_addr = inet_addr(SERV_HOST_ADDR); //<La función inet_addt pasa un string a la notación de punto utilizada en IPv4
-  serv_addr.sin_port = htons(SERV_TCP_PORT);
+  serv_addr.sin_port = htons(SERV_TCP_PORT); //< almacenamos el puerto donde se encuentra el servidor con el que nos queremos conectar
 
 
-
-
+  /**
+  * \brief socket
+  *
+  * Función para crear el socket que utilizaremos como método de comunicación
+  * @param AF_INET Definimos que la comunicación será a través de inet con una
+  * máquina externa
+  * @param SOCK_STREAM  Permite mandar el mensaje como un flujo de bytes
+  * @return 0=si se ha creado correctamente; -1= ha hbaido algún error
+  */
   if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0) ) < 0){
     perror("client: can't open stream socket");
 
   }
+
+/**
+* @brief <brief>
+* @param [in] <sockfd> <Identificadro único del fichero donde almacenaremos las
+*                        transmisiones que se hagan por sockets>
+*@☺param [in] z
+* @return <return_description>
+* @details <details>
+*/
 
   if (connect(sockfd,  (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0){
     perror("client: can't connect to server");
